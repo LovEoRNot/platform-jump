@@ -19,6 +19,10 @@ export default class Platform extends Sprite {
     }
   }
 
+  collide() {
+    this.direction = -this.direction
+  }
+
   draw() {
     this.update()
     this.pencil.rect(this.point, this.width, this.height, this.color)

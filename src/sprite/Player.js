@@ -1,4 +1,4 @@
-import Sprite from "./Sprite";
+import Sprite, { RIGHT, BOTTOM, LEFT, TOP } from "./Sprite";
 import Point from "../basic/Point";
 import Pencil from "./Pencil";
 import Angle from "../basic/Angle";
@@ -36,6 +36,29 @@ export default class Player extends Sprite {
     this.pencil.arc(this.point, this.radius, new Angle(0), new Angle(360), this.color)
   }
 
+  /**
+   * @param {Sprite} sprite 
+   */
+  collide(sprite, isInnerCollide) {
+    const { top, left, right, bottom } = sprite.getPosition()
+    const gap = this.radius + 1
+    switch(this.direction) {
+      case TOP:
+        this.point.y = (isInnerCollide ? top : bottom) + gap
+        break;
+      case RIGHT:
+        this.point.x = (isInnerCollide ? right : left) - gap
+        break;
+      case BOTTOM:
+        this.point.y = (isInnerCollide ? bottom : top) - gap
+        break;
+      case LEFT:
+        this.point.x = (isInnerCollide ? left : right) + gap
+    }
+
+    this.speed = 0
+  }
+
   update() {
     switch (this.currenKeyCode) {
       case 37:
@@ -50,11 +73,6 @@ export default class Player extends Sprite {
       case 38:
       case 32:
         this.moveUp(this.isAccel)
-        // 如果上抛速度将为0的话，则开始降落
-        // if (!this.speed) {
-        //   this.currenKeyCode = 40
-        //   this.accel = true
-        // }
         break
     }
   }

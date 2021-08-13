@@ -1,7 +1,7 @@
 import Point from "../basic/Point";
 import { getCanvasWidthAndHeight } from "../getContext";
 import Pencil from "./Pencil";
-import { horizontalCollide, verticalCollide } from '../utils/collide'
+import { horizontalCollide, verticalCollide, innerHorizontalCollide, innerVerticalCollide } from '../utils/collide'
 
 const deceleration = 0.4; // 减速度
 
@@ -28,8 +28,6 @@ export default class Sprite {
     this.accel = acceleration || 0;
     this.isMoving = false;
 
-    this.isInnerCollide = false
-
     this.direction = TOP
 
     this.isStop = false
@@ -39,19 +37,22 @@ export default class Sprite {
   getPosition() {
     return { top: 0, right: 0, bottom: 0, left: 0 }
   }
-
-  collide() {}
+  collide() { }
+  draw() { }
+  update() { }
 
   /**
    * 碰撞检测
    * @param {Sprite} sprite
    */
-  isCollided(sprite) {
+  isCollided(sprite, isInnerCollide) {
     const currentPosition = this.getPosition()
     const otherPosition = sprite.getPosition()
-    // if (this.isInnerCollide) {
-    //   return !(top >= _top && left >= _left && right <= _right && bottom <= _bottom)
-    // }
+
+    if (isInnerCollide) {
+      return innerHorizontalCollide(currentPosition, otherPosition) || innerVerticalCollide(currentPosition, otherPosition)
+    }
+
     return verticalCollide(currentPosition, otherPosition) || horizontalCollide(currentPosition, otherPosition)
   }
 
@@ -64,10 +65,6 @@ export default class Sprite {
     this.isStop = false
   }
 
-  draw() { }
-
-  update() { }
-
   /**
    * 移动
    * @param {number} accel 加速度
@@ -75,9 +72,9 @@ export default class Sprite {
    */
   __basicMove(accel) {
     if (this.isStop) return false
-    
+
     this.speed += accel
-    
+
     if ([TOP, BOTTOM].includes(this.direction)) {
       // 位置移动，因为y轴坐标从上到下递增，所以此处坐标也要反着来
       this.point.y -= this.speed;
@@ -96,8 +93,10 @@ export default class Sprite {
       }
       this.speed = -this.speed
     }
-
-    const accel = isAccel ? this.accel : -deceleration
+    let accel = 0
+    if (this.accel) {
+      accel = isAccel ? this.accel : -deceleration
+    }
 
     return this.__basicMove(accel);
   }
@@ -110,8 +109,11 @@ export default class Sprite {
       }
       this.speed = -this.speed
     }
-
-    const accel = isAccel ? -this.accel : deceleration
+    
+    let accel = 0
+    if (this.accel) {
+      accel = isAccel ? -this.accel : deceleration
+    }
 
     return this.__basicMove(accel);
   }

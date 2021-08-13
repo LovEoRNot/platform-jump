@@ -19,3 +19,19 @@ export function horizontalCollide(position1, position2) {
 
   return ((right >= _left && left <= _left) || (left <= _right && right >= _right)) && isCover(top, bottom, _top, _bottom)
 }
+
+// 内部垂直方向碰撞
+export function innerVerticalCollide(position1, position2) {
+  const { top, right, left, bottom } = position1
+  const { top: _top, right: _right, left: _left, bottom: _bottom } = position2
+
+  return ((top <= _top && bottom >= _top) || (bottom >= _bottom && top <= _bottom)) && isCover(left, right, _left, _right)
+}
+
+// 内部水平方向碰撞
+export function innerHorizontalCollide(position1, position2) {
+  const { top, right, left, bottom } = position1
+  const { top: _top, right: _right, left: _left, bottom: _bottom } = position2
+
+  return ((left <= _left && right >= _left) || (right >= _right && left <= _right)) && isCover(top, bottom, _top, _bottom)
+}

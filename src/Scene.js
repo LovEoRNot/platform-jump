@@ -14,6 +14,11 @@ export default class Scene extends Sprite {
     this.update()
   }
 
+  getPosition() {
+    const { width, height } = getCanvasWidthAndHeight()
+    return { top: 0, right: width, bottom: height, left: 0 }
+  }
+
   /**
    * @param {Sprite} sprite 
    */
@@ -32,17 +37,21 @@ export default class Scene extends Sprite {
     this.draw(width, height)
     // 绘制角色
     this.player.draw()
+    if (this.player.isCollided(this, true)) {
+      this.player.collide(this, true)
+    }
     // 绘制其他元素
     this.sprites.forEach(sprite => {
       sprite.draw()
       if (this.player.isCollided(sprite)) {
-        this.player.stop()
-        // sprite.stop()
-      } else {
-        this.player.start()
-        // sprite.start()
+        this.player.collide(sprite)
+      }
+      if (sprite.isCollided(this, true)) {
+        sprite.collide(this, true)
       }
     })
+
+    console.log(this.player.direction)
     window.requestAnimationFrame(() => {
       this.update()
     })
