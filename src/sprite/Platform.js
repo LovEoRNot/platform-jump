@@ -1,5 +1,5 @@
 import Pencil from "./Pencil";
-import Sprite from "./Sprite";
+import Sprite, { RIGHT } from "./Sprite";
 
 export default class Platform extends Sprite {
   constructor(context, point, width, height, color, speed) {
@@ -7,7 +7,7 @@ export default class Platform extends Sprite {
     this.width = width
     this.height = height
     this.color = color
-    this.moveDirection = 1
+    this.direction = RIGHT
   }
 
   getPosition() {
@@ -25,12 +25,12 @@ export default class Platform extends Sprite {
   }
 
   update() {
-    if (this.moveDirection === 1) {
+    if (this.direction === RIGHT) {
       const isMoving = this.moveRight(true)
-      if (!isMoving) this.moveDirection = 0
+      if (!isMoving) this.direction = -RIGHT
     } else {
       const isMoving = this.moveLeft(true)
-      if (!isMoving) this.moveDirection = 1
+      if (!isMoving) this.moveDirection = RIGHT
     }
   }
 }

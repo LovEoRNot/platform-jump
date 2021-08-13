@@ -1,30 +1,16 @@
 import Point from "../basic/Point";
 import { getCanvasWidthAndHeight } from "../getContext";
 import Pencil from "./Pencil";
+import { horizontalCollide, verticalCollide } from '../utils/collide'
 
 const deceleration = 0.4; // 减速度
-const gravity = 0.6
 
-// 判断给定的两个坐标点是否相互覆盖
-function isCover(pos1, pos2, _pos1, _pos2) {
-  return (pos1 >= _pos1 && pos2 <= _pos2) || (_pos1 >= pos1 && _pos1 <= pos2)
-}
+export const LEFT = 1
+export const RIGHT = -1
+export const TOP = 2
+export const BOTTOM = -2
 
-// 垂直方向碰撞
-function verticalCollide(position1, position2) {
-  const { top, right, left, bottom } = position1
-  const { top: _top, right: _right, left: _left, bottom: _bottom } = position2
-
-  return ((top <= _bottom && top >= _top) || (bottom >= _top && bottom <= _bottom)) && isCover(left, right, _left, _right)
-}
-
-// 水平方向碰撞
-function horizontalCollide(position1, position2) {
-  const { top, right, left, bottom } = position1
-  const { top: _top, right: _right, left: _left, bottom: _bottom } = position2
-
-  return ((right >= _left && left <= _left) || (left <= _right && right >= _right)) && isCover(top, bottom, _top, _bottom)
-}
+// const gravity = 0.6
 
 export default class Sprite {
   /**
@@ -44,6 +30,8 @@ export default class Sprite {
 
     this.isInnerCollide = false
 
+    this.direction = TOP
+
     this.isStop = false
   }
 
@@ -51,6 +39,8 @@ export default class Sprite {
   getPosition() {
     return { top: 0, right: 0, bottom: 0, left: 0 }
   }
+
+  collide() {}
 
   /**
    * 碰撞检测
@@ -74,121 +64,79 @@ export default class Sprite {
     this.isStop = false
   }
 
-  draw() {}
+  draw() { }
 
-  update() {}
-
-    /**
-   * 垂直方向移动
-   * @param {bool} isAccel 是否是加速
-   * @param {*} direction 方向，向上或向下， 1为上，0为下
-   * @returns bool
-   */
-  __verticalMove(isAccel, direction) {
-    if (this.isStop) return false
-
-
-    if (isAccel) {
-      this.speed += this.accel;
-    } else {
-      this.speed -= gravity;
-    }
-
-    if (this.speed <= 0) {
-      this.speed = 0;
-    }
-    if (direction === 1) {
-      this.point.y -= this.speed;
-    } else {
-      this.point.y += this.speed;
-    }
-
-    return true
-  }
+  update() { }
 
   /**
-   * 水平方向移动
-   * @param {bool} isAccel 是否是加速
-   * @param {*} direction 方向，向左或向右
+   * 移动
+   * @param {number} accel 加速度
    * @returns bool
    */
-   __horizontalMove(isAccel, direction) {
+  __basicMove(accel) {
     if (this.isStop) return false
-
-    // 加速时直接加上加速度否则减去
-    if (isAccel) {
-      this.speed += this.accel;
-    } else {
-      this.speed -= deceleration;
-    }
-
-    // 速度小于0时重置为0
-    if (this.speed <= 0) {
-      this.speed = 0;
-    }
-    if (direction === 1) {
+    
+    this.speed += accel
+    
+    if ([TOP, BOTTOM].includes(this.direction)) {
+      // 位置移动，因为y轴坐标从上到下递增，所以此处坐标也要反着来
+      this.point.y -= this.speed;
+    } else if ([LEFT, RIGHT].includes(this.direction)) {
       this.point.x += this.speed;
-    } else {
-      this.point.x -= this.speed;
     }
+
     return true;
+  }
+
+  positiveMove(isAccel) {
+    if (this.speed <= 0) {
+      if (!isAccel) {
+        this.speed = 0
+        return false
+      }
+      this.speed = -this.speed
+    }
+
+    const accel = isAccel ? this.accel : -deceleration
+
+    return this.__basicMove(accel);
+  }
+
+  negativeMove(isAccel) {
+    if (this.speed >= 0) {
+      if (!isAccel) {
+        this.speed = 0
+        return false
+      }
+      this.speed = -this.speed
+    }
+
+    const accel = isAccel ? -this.accel : deceleration
+
+    return this.__basicMove(accel);
   }
 
   // 上移
   moveUp(isAccel) {
-    if (this.point.y <= 0) {
-      this.point.y = 0;
-      if (this.accel) {
-        this.speed = 0;
-      }
-      return false;
-    }
-
-    return this.__verticalMove(isAccel, 1);
+    this.direction = TOP
+    return this.positiveMove(isAccel);
   }
 
   // 下移
   moveDown(isAccel) {
-    const canvasHeight = getCanvasWidthAndHeight().height;
-
-    // 判断当前节点是否出界了，如果出界的则把当前位置重置到边界上，如果物体有加速度的话，速度直接清0
-    if (this.point.y >= canvasHeight) {
-      this.point.y = canvasHeight;
-      if (this.accel) {
-        this.speed = 0;
-      }
-      return false;
-    }
-
-    return this.__verticalMove(isAccel, 0);
+    this.direction = BOTTOM
+    return this.negativeMove(isAccel)
   }
 
   // 左移
   moveLeft(isAccel) {
-    if (this.point.x <= 0) {
-      this.point.x = 0;
-      if (this.accel) {
-        this.speed = 0;
-      }
-      return false;
-    }
-
-    return this.__horizontalMove(isAccel, 0);
+    this.direction = LEFT
+    return this.negativeMove(isAccel)
   }
 
   // 右移
   moveRight(isAccel) {
-    const canvasWidth = getCanvasWidthAndHeight().width;
-
-    // 判断当前节点是否出界了，如果出界的则把当前位置重置到边界上，如果物体有加速度的话，速度直接清0
-    if (this.point.x >= canvasWidth) {
-      this.point.x = canvasWidth;
-      if (this.accel) {
-        this.speed = 0;
-      }
-      return false;
-    }
-
-    return this.__horizontalMove(isAccel, 1);
+    this.direction = RIGHT
+    return this.positiveMove(isAccel);
   }
 }
