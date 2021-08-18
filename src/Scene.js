@@ -51,7 +51,7 @@ export default class Scene extends Sprite {
       }
     })
 
-    console.log(this.player.direction)
+    console.log(this.player.accel)
     window.requestAnimationFrame(() => {
       this.update()
     })

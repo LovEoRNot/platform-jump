@@ -1,7 +1,8 @@
 import Sprite, { RIGHT, BOTTOM, LEFT, TOP } from "./Sprite";
 import Point from "../basic/Point";
-import Pencil from "./Pencil";
 import Angle from "../basic/Angle";
+
+const accelRate = 0.1
 
 export default class Player extends Sprite {
   /**
@@ -11,7 +12,7 @@ export default class Player extends Sprite {
    * @param {number} accel
    */
   constructor(context, point, speed, accel) {
-    super(context, point, speed, accel)
+    super(context, point, speed, accel, 10)
 
     window.addEventListener('keydown', (e) => this.onPlayerMove(e, true))
     window.addEventListener('keyup', (e) => this.onPlayerMove(e, false))
@@ -73,14 +74,29 @@ export default class Player extends Sprite {
       case 38:
       case 32:
         this.moveUp(this.isAccel)
+        // if (this.speed === 0) {
+        //   this.moveDown(true)
+        // }
         break
     }
   }
 
+  timer = null
+
   onPlayerMove(event, isAccel) {
     const keyCode = event.keyCode || event.which
-
     this.currenKeyCode = keyCode
+
+    // if (isAccel) {
+    //   // this.accel = 0
+    //   console.log('come')
+    //   if (this.accel <= this.maxAccel) {
+    //     this.accel += accelRate
+    //   }
+    // } else {
+    //   clearTimeout(this.timer)
+    // }
+
     this.isAccel = isAccel
   }
 

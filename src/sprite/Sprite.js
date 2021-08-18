@@ -19,7 +19,7 @@ export default class Sprite {
    * @param {number} speed
    * @param {number} acceleration 加速度
    */
-  constructor(context, point, speed, acceleration) {
+  constructor(context, point, speed, acceleration, maxSpeed) {
     this.context = context;
     this.pencil = new Pencil(context);
     this.point = point;
@@ -27,6 +27,7 @@ export default class Sprite {
     this.speed = speed || 0; // 移动速度，单位像素
     this.accel = acceleration || 0;
     this.isMoving = false;
+    this.maxSpeed = maxSpeed || Infinity
 
     this.direction = TOP
 
@@ -74,6 +75,11 @@ export default class Sprite {
     if (this.isStop) return false
 
     this.speed += accel
+    if (this.speed >= this.maxSpeed) {
+      this.speed = this.maxSpeed
+    } else if (this.speed <= -this.maxSpeed) {
+      this.speed = -this.maxSpeed
+    }
 
     if ([TOP, BOTTOM].includes(this.direction)) {
       // 位置移动，因为y轴坐标从上到下递增，所以此处坐标也要反着来
